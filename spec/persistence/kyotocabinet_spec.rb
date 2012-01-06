@@ -28,6 +28,11 @@ describe Eventus::Persistence::KyotoCabinet do
     result[0].should == o
   end
 
+  it "should return no events when key not found" do
+    result = persistence.load "my_id"
+    result.should be_empty
+  end
+
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
     let(:events) { (1..20).map {|i| "Body #{i}"} }
