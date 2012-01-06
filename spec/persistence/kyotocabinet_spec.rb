@@ -13,6 +13,15 @@ describe Eventus::Persistence::KyotoCabinet do
     end
   end
 
+  it "should store complex objects" do
+    id = uuid.generate :compact
+    o = {'a' => 'super', 'complex' => ['object', 'with', {'nested' => ['members', 'galore', 1]}]}
+    persistence.commit id, 1, [o]
+
+    events = persistence.load id
+    events[0].should == o
+  end
+
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
     before do
@@ -25,6 +34,39 @@ describe Eventus::Persistence::KyotoCabinet do
     it "should load events" do
       result = persistence.load id
       result.length.should == 20
+    end
+
+    it "should throw concurrency exception if the same event number is added" do
+      lambda {persistence.commit id, 3, ["This is taken"]}.should raise_error(Eventus::ConcurrencyError)
+    end
+
+    it "should rollback changes on concurrency error" do
+      persistence.commit id, 3, ["first", "second", "third"] rescue nil
+
+      result = persistence.load id
+      result.length.should == 20
+    end
+  end
+
+  describe "when serialization is set" do
+    let(:serializer) { stub }
+    before do
+      options[:serialize] = lambda { |obj| serializer.serialize(obj) }
+      options[:deserialize] = lambda { |obj| serializer.deserialize(obj) }
+    end
+
+    it "should use serializer" do
+      input = "original"
+      ser = "i'm serialized!"
+
+      serializer.should_receive(:serialize).with(input).and_return(ser)
+      serializer.should_receive(:deserialize).with(ser).and_return(input)
+
+      id = uuid.generate :compact
+
+      persistence.commit id, 1, [input]
+      result = persistence.load id
+      result[0].should == input
     end
   end
 end
