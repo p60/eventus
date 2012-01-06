@@ -1,3 +1,5 @@
+require 'kyotocabinet'
+
 module Eventus
   module Persistence
     class KyotoCabinet
@@ -5,8 +7,7 @@ module Eventus
       def initialize(options = {})
         @db = ::KyotoCabinet::DB::new
         @db.open(options[:path], ::KyotoCabinet::DB::OCREATE)
-        @serialize = options.fetch(:serialize, lambda { |obj| Marshal.dump(obj) })
-        @deserialize = options.fetch(:deserialize, lambda { |obj| Marshal.load(obj) })
+        @serializer = options.fetch(:serializer, Eventus::Serializers::Marshal)
       end
 
       def commit(id, start, events)
@@ -14,7 +15,7 @@ module Eventus
         @db.transaction do
           events.each_with_index do |event,index|
             key = build_key(pid, start + index)
-            value = @serialize.call(event)
+            value = @serializer.serialize(event)
             raise Eventus::ConcurrencyError unless @db.add(key,value)
           end
         end
@@ -23,7 +24,7 @@ module Eventus
       def load(id)
         pid = packed(id)
         keys = @db.match_prefix(pid)
-        @db.get_bulk(keys,false).values.map { |obj| @deserialize.call(obj) }
+        @db.get_bulk(keys,false).values.map { |obj| @serializer.deserialize(obj) }
       end
 
       def packed(id)

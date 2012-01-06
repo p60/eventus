@@ -1,4 +1,5 @@
-module Eventus::Persistence
+module Eventus
+  module Persistence
+    autoload :KyotoCabinet, 'eventus/persistence/kyotocabinet'
+  end
 end
-
-%w{kyotocabinet}.each { |lib| require "eventus/persistence/#{lib}" }

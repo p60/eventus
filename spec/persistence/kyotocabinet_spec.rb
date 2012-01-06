@@ -51,8 +51,7 @@ describe Eventus::Persistence::KyotoCabinet do
   describe "when serialization is set" do
     let(:serializer) { stub }
     before do
-      options[:serialize] = lambda { |obj| serializer.serialize(obj) }
-      options[:deserialize] = lambda { |obj| serializer.deserialize(obj) }
+      options[:serializer] = serializer
     end
 
     it "should use serializer" do
