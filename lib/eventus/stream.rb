@@ -9,8 +9,15 @@ module Eventus
       @uncommitted_events = []
     end
 
-    def <<(event)
+    def add(event)
       @uncommitted_events << event
+    end
+
+    alias_method :<<, :add
+
+    def commit
+      @uncommitted_events.each{ |u| @committed_events << u }
+      @uncommitted_events.clear
     end
   end
 end
