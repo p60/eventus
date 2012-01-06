@@ -11,9 +11,9 @@ module Eventus
       end
 
       def commit(id, start, events)
-        pid = packed(id)
+        pid = pack_hex(id)
         @db.transaction do
-          events.each_with_index do |event,index|
+          events.each_with_index do |event, index|
             key = build_key(pid, start + index)
             value = @serializer.serialize(event)
             raise Eventus::ConcurrencyError unless @db.add(key,value)
@@ -21,14 +21,20 @@ module Eventus
         end
       end
 
-      def load(id)
-        pid = packed(id)
+      def load(id, min = nil)
+        pid = pack_hex(id)
         keys = @db.match_prefix(pid)
-        @db.get_bulk(keys,false).values.map { |obj| @serializer.deserialize(obj) }
+
+        if min
+          min_key = build_key(pid, min)
+          keys = keys.drop_while { |k| k != min_key }
+        end
+
+        @db.get_bulk(keys, false).values.map { |obj| @serializer.deserialize(obj) }
       end
 
-      def packed(id)
-        [id].pack('H*')
+      def pack_hex(id)
+        id.match(/^[0-9a-fA-F]+$/) ? [id].pack('H*') : id
       end
 
       def build_key(id, index)

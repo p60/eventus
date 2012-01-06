@@ -8,9 +8,15 @@ describe Eventus::Persistence::KyotoCabinet do
   it "should pack keys" do
     1000.times do
       key = uuid.generate(:compact)
-      packed = persistence.packed(key)
+      packed = persistence.pack_hex(key)
       packed.unpack('H*')[0].should == key
     end
+  end
+
+  it "should not pack non-hex strings" do
+    key = 'abc123q'
+    packed = persistence.pack_hex(key)
+    packed.should == key
   end
 
   it "should store complex objects" do
@@ -18,14 +24,14 @@ describe Eventus::Persistence::KyotoCabinet do
     o = {'a' => 'super', 'complex' => ['object', 'with', {'nested' => ['members', 'galore', 1]}]}
     persistence.commit id, 1, [o]
 
-    events = persistence.load id
-    events[0].should == o
+    result = persistence.load id
+    result[0].should == o
   end
 
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
+    let(:events) { (1..20).map {|i| "Body #{i}"} }
     before do
-      events = (1..20).map {|i| "Body #{i}"}
       persistence.commit id, 1, events
       other_events = (1..60).map {|i| "Other #{i}"}
       persistence.commit uuid.generate(:compact), 1, events
@@ -45,6 +51,11 @@ describe Eventus::Persistence::KyotoCabinet do
 
       result = persistence.load id
       result.length.should == 20
+    end
+
+    it "should load all events from a minimum" do
+      result = persistence.load id, 10
+      result.length.should == 11
     end
   end
 
