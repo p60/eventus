@@ -33,6 +33,17 @@ describe Eventus::Persistence::KyotoCabinet do
     result.should be_empty
   end
 
+  it "should return events ordered" do
+    id = uuid.generate :compact
+    persistence.commit id, 5, ["five", "six"]
+    persistence.commit id, 1, ["one", "two"]
+    persistence.commit id, 3, ["three", "four"]
+    persistence.commit "other", 1, ["cake", "batter"]
+
+    result = persistence.load id
+    result.should == ["one", "two", "three", "four", "five", "six"]
+  end
+
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
     let(:events) { (1..20).map {|i| "Body #{i}"} }
