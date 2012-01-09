@@ -23,14 +23,14 @@ module Eventus
 
       def load(id, min=nil)
         @mutex.synchronize do
-          keys = @store.keys.select { |k| k.start_with? id }
+          keys = @store.keys.select { |k| k.start_with? id }.sort
 
           if min
             min_key = build_key(id, min)
             keys = keys.drop_while { |k| k != min_key }
           end
 
-          keys.sort.map { |k| @serializer.deserialize(@store[k]) }
+          keys.map { |k| @serializer.deserialize(@store[k]) }
         end
       end
 
