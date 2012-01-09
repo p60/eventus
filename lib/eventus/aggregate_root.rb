@@ -26,6 +26,10 @@ module Eventus
         end
       end
 
+      def save
+        @stream.commit
+      end
+
       protected
 
       def apply_change(name, body=nil, is_new=true)

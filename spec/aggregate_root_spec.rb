@@ -52,4 +52,18 @@ describe Eventus::AggregateRoot do
       aggregate.bake_cake
     end
   end
+
+  describe "when saving" do
+    let(:aggregate) { TestAgg.new }
+    let(:stream) { stub(:stream, :committed_events => []) }
+
+    before do
+      aggregate.populate(stream)
+    end
+
+    it "should commit stream" do
+      stream.should_receive(:commit)
+      aggregate.save
+    end
+  end
 end
