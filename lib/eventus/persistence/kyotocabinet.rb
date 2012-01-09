@@ -7,7 +7,7 @@ module Eventus
       def initialize(options = {})
         @db = ::KyotoCabinet::DB::new
         @db.open(options[:path], ::KyotoCabinet::DB::OCREATE)
-        @serializer = options.fetch(:serializer, Eventus::Serializers::Marshal)
+        @serializer = options.fetch(:serializer) { Eventus::Serializers::Marshal }
       end
 
       def commit(id, start, events)
