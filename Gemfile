@@ -7,4 +7,5 @@ group :development do
   gem 'guard-rspec'
   gem 'libnotify' if RUBY_PLATFORM =~ /linux/i
   gem 'uuid'
+  gem 'kyotocabinet-ruby'
 end
