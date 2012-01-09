@@ -1,12 +1,14 @@
 module Eventus
   class Stream
 
-    attr_accessor :id, :committed_events, :uncommitted_events
+    attr_reader :id, :committed_events, :uncommitted_events
 
-    def initialize(id, events)
+    def initialize(id, persistence)
       @id = id
-      @committed_events = events
+      @persistence = persistence
+      @committed_events = []
       @uncommitted_events = []
+      load_events @persistence.load(id)
     end
 
     def add(event)
@@ -16,8 +18,22 @@ module Eventus
     alias_method :<<, :add
 
     def commit
-      @uncommitted_events.each{ |u| @committed_events << u }
+      @persistence.commit @id, version, @uncommitted_events
+      load_events @uncommitted_events
       @uncommitted_events.clear
+    rescue ConcurrencyError => e
+      load_events @persistence.load(id, version + 1)
+      raise e
+    end
+
+    def version
+      @committed_events.length
+    end
+
+    private
+
+    def load_events(events)
+      events.each { |e| @committed_events << e }
     end
   end
 end
