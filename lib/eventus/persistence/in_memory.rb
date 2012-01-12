@@ -34,8 +34,22 @@ module Eventus
         end
       end
 
+      def load_undispatched
+        @mutex.synchronize do
+          @store.map { |k,v| build_event(k, @serializer.deserialize(v)) }
+                .reject { |e| e['dispatched'] || e[:dispatched] }
+        end
+      end
+
       def build_key(id, index)
         id + ("_%07d" % index)
+      end
+
+
+      private
+      def build_event(key, body)
+        body['event_id'] = key
+        body
       end
     end
   end
