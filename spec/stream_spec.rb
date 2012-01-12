@@ -58,7 +58,6 @@ describe Eventus::Stream do
       end
 
       it "should have sequence id on committed events" do
-        puts stream.committed_events.inspect
         stream.committed_events.all?{ |e| e['sequence'] }.should == true
       end
 
