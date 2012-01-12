@@ -69,7 +69,10 @@ describe Eventus::Persistence::KyotoCabinet do
     end
 
     it "should rollback changes on concurrency error" do
-      persistence.commit create_commit(id, 3, "first", "second", "third") rescue nil
+      begin
+      persistence.commit create_commit(id, 3, "first", "second", "third") 
+      rescue Eventus::ConcurrencyError
+      end
 
       result = persistence.load id
       result.length.should == 20
@@ -104,14 +107,3 @@ describe Eventus::Persistence::KyotoCabinet do
   end
 end
 
-def create_commit(id, start, *bodies)
-  bodies.each.with_index(start).map do |b, i|
-    {
-      'name' => 'cereal',
-      'body' => b,
-      'time' => Time.now.utc.iso8601,
-      'sid' => id,
-      'sequence' => i
-    }
-  end
-end

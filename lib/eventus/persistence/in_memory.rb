@@ -8,11 +8,11 @@ module Eventus
         @mutex = Mutex.new
       end
 
-      def commit(id, start, events)
+      def commit(events)
         @mutex.synchronize do
           pending = {}
-          events.each_with_index do |event, index|
-            key = build_key(id, start + index)
+          events.each do |event|
+            key = build_key(event['sid'], event['sequence'])
             raise Eventus::ConcurrencyError if @store.include? key
             value = @serializer.serialize(event)
             pending[key] = value
@@ -36,20 +36,13 @@ module Eventus
 
       def load_undispatched
         @mutex.synchronize do
-          @store.map { |k,v| build_event(k, @serializer.deserialize(v)) }
+          @store.map { |k,v| @serializer.deserialize(v) }
                 .reject { |e| e['dispatched'] || e[:dispatched] }
         end
       end
 
       def build_key(id, index)
         id + ("_%07d" % index)
-      end
-
-
-      private
-      def build_event(key, body)
-        body['event_id'] = key
-        body
       end
     end
   end

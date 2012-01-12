@@ -41,7 +41,7 @@ module Eventus
             k,v = record
             obj = @serializer.deserialize(v)
             unless (obj['dispatched'] || obj[:dispatched])
-              events << build_event(k, obj)
+              events << obj
             end
           end
         end
@@ -55,13 +55,6 @@ module Eventus
 
       def build_key(id, index)
         id + ("_%07d" % index)
-      end
-
-      private
-
-      def build_event(key, body)
-        body['event_id'] = key
-        body
       end
     end
   end
