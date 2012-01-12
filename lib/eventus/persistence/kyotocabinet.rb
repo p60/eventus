@@ -33,12 +33,35 @@ module Eventus
         @db.get_bulk(keys, false).values.map { |obj| @serializer.deserialize(obj) }
       end
 
+      def load_undispatched
+        events = []
+        @db.cursor_process do |cur|
+          cur.jump
+          while (record = cur.get(true))
+            k,v = record
+            obj = @serializer.deserialize(v)
+            unless (obj['dispatched'] || obj[:dispatched])
+              events << build_event(k, obj)
+            end
+          end
+        end
+
+        events
+      end
+
       def pack_hex(id)
         id.match(/^[0-9a-fA-F]+$/) ? [id].pack('H*') : id
       end
 
       def build_key(id, index)
         id + ("_%07d" % index)
+      end
+
+      private
+
+      def build_event(key, body)
+        body['event_id'] = key
+        body
       end
     end
   end

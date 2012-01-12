@@ -3,11 +3,12 @@ module Eventus
 
     attr_reader :id, :committed_events, :uncommitted_events
 
-    def initialize(id, persistence)
+    def initialize(id, persistence, dispatcher)
       @id = id
       @persistence = persistence
       @committed_events = []
       @uncommitted_events = []
+      @dispatcher = dispatcher
       load_events @persistence.load(id)
     end
 
@@ -20,6 +21,7 @@ module Eventus
     def commit
       @persistence.commit @id, version, @uncommitted_events
       load_events @uncommitted_events
+      @dispatcher.dispatch @uncommitted_events if @dispatcher
       @uncommitted_events.clear
     rescue ConcurrencyError => e
       load_events @persistence.load(id, version + 1)

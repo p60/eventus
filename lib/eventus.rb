@@ -1,6 +1,9 @@
 module Eventus
   autoload :Serializers, 'eventus/serializers'
   autoload :AggregateRoot, 'eventus/aggregate_root'
+  autoload :Dispatchers, 'eventus/dispatchers'
+  autoload :Persistence, 'eventus/persistence'
+  autoload :VERSION, 'eventus/version'
 
   class << self
 
@@ -11,7 +14,15 @@ module Eventus
     def persistence=(val)
       @persistence = val
     end
+
+    def dispatcher
+      @dispatcher ||= Eventus::Dispatchers::Synchronous.new(persistence)
+    end
+
+    def dispatcher=(val)
+      @dispatcher = val
+    end
   end
 end
 
-%w{store stream version persistence errors}.each { |r| require "eventus/#{r}" }
+%w{store stream errors}.each { |r| require "eventus/#{r}" }

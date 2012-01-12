@@ -46,16 +46,21 @@ describe Eventus::Persistence::KyotoCabinet do
 
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
-    let(:events) { (1..20).map {|i| "Body #{i}"} }
+    let(:events) { (1..20).map {|i| { :dispatched => i.even? } } }
     before do
       persistence.commit id, 1, events
-      other_events = (1..60).map {|i| "Other #{i}"}
-      persistence.commit uuid.generate(:compact), 1, events
+      other_events = (1..60).map {|i| { :dispatched => i.odd? }}
+      persistence.commit uuid.generate(:compact), 1, other_events
     end
 
     it "should load events" do
       result = persistence.load id
       result.length.should == 20
+    end
+
+    it "should load undispatched events" do
+      result = persistence.load_undispatched
+      result.length.should == 40 #10 from events, 30 from other_events
     end
 
     it "should throw concurrency exception if the same event number is added" do

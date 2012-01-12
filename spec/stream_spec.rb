@@ -2,8 +2,9 @@ require 'spec_helper'
 
 describe Eventus::Stream do
   let(:id) { UUID.generate(:compact) }
-  let(:stream) { Eventus::Stream.new(id, persistence) }
+  let(:stream) { Eventus::Stream.new(id, persistence, dispatcher) }
   let(:persistence) { stub(:persistence).as_null_object }
+  let(:dispatcher) { stub(:dispatcher).as_null_object }
 
   it "should use id" do
     stream.id.should == id
@@ -44,6 +45,7 @@ describe Eventus::Stream do
     describe "when committed" do
       before do
         persistence.should_receive(:commit)
+        dispatcher.should_receive(:dispatch)
         stream.commit
       end
 

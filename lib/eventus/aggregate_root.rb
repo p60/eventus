@@ -3,7 +3,7 @@ module Eventus
     module ClassMethods
       def find(id)
         instance = self.new
-        stream = Eventus::Stream.new(id, persistence)
+        stream = Eventus::Stream.new(id, persistence, Eventus.dispatcher)
         instance.populate(stream)
         instance
       end
