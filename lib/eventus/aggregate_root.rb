@@ -36,7 +36,7 @@ module Eventus
         method_name = "apply_#{name}"
         self.send method_name, body if self.respond_to?(method_name)
 
-        @stream.add({:name => name, :body => body}) if is_new
+        @stream.add(name, body) if is_new
       end
     end
 

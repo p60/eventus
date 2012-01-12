@@ -34,8 +34,8 @@ describe Eventus::Stream do
 
   describe "when events added" do
     before do
-      stream << stub
-      stream.add stub
+      stream.add "french"
+      stream.add "bread"
     end
 
     it "should have uncommitted events" do
@@ -47,6 +47,19 @@ describe Eventus::Stream do
         persistence.should_receive(:commit)
         dispatcher.should_receive(:dispatch)
         stream.commit
+      end
+
+      it "should have timestamp on committed events" do
+        stream.committed_events.all?{ |e| e['time'] }.should == true
+      end
+
+      it "should have stream id on committed events" do
+        stream.committed_events.all?{ |e| e['sid'] }.should == true
+      end
+
+      it "should have sequence id on committed events" do
+        puts stream.committed_events.inspect
+        stream.committed_events.all?{ |e| e['sequence'] }.should == true
       end
 
       it "should have committed events" do
@@ -62,7 +75,7 @@ describe Eventus::Stream do
   describe "when a concurrency error occurs" do
     before do
       persistence.should_receive(:commit).and_raise(Eventus::ConcurrencyError)
-      stream << stub(:event)
+      stream.add "butter"
     end
 
     it "should reraise concurrency error" do

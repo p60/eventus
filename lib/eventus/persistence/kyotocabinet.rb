@@ -10,11 +10,11 @@ module Eventus
         @serializer = options.fetch(:serializer) { Eventus::Serializers::Marshal }
       end
 
-      def commit(id, start, events)
-        pid = pack_hex(id)
+      def commit(events)
         @db.transaction do
-          events.each_with_index do |event, index|
-            key = build_key(pid, start + index)
+          events.each do |event, index|
+            pid = pack_hex(event['sid'])
+            key = build_key(pid, event['sequence'])
             value = @serializer.serialize(event)
             raise Eventus::ConcurrencyError unless @db.add(key,value)
           end

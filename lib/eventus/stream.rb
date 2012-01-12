@@ -1,3 +1,5 @@
+require 'time'
+
 module Eventus
   class Stream
 
@@ -12,14 +14,18 @@ module Eventus
       load_events @persistence.load(id)
     end
 
-    def add(event)
-      @uncommitted_events << event
+    def add(name, body={})
+      @uncommitted_events << {'name' => name, 'body' => body}
     end
 
-    alias_method :<<, :add
-
     def commit
-      @persistence.commit @id, version, @uncommitted_events
+      time = Time.now.utc.iso8601
+      @uncommitted_events.each.with_index(version) do |e, i|
+        e['time'] = time
+        e['sid'] = @id
+        e['sequence'] = i
+      end
+      @persistence.commit @uncommitted_events
       load_events @uncommitted_events
       @dispatcher.dispatch @uncommitted_events if @dispatcher
       @uncommitted_events.clear

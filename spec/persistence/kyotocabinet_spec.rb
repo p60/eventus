@@ -22,10 +22,11 @@ describe Eventus::Persistence::KyotoCabinet do
   it "should store complex objects" do
     id = uuid.generate :compact
     o = {'a' => 'super', 'complex' => ['object', 'with', {'nested' => ['members', 'galore', 1]}]}
-    persistence.commit id, 1, [o]
+    commit = create_commit(id, 1, o)
+    persistence.commit(commit)
 
     result = persistence.load id
-    result[0].should == o
+    result[0].should == commit[0]
   end
 
   it "should return no events when key not found" do
@@ -35,22 +36,22 @@ describe Eventus::Persistence::KyotoCabinet do
 
   it "should return events ordered" do
     id = uuid.generate :compact
-    persistence.commit id, 5, ["five", "six"]
-    persistence.commit id, 1, ["one", "two"]
-    persistence.commit id, 3, ["three", "four"]
-    persistence.commit "other", 1, ["cake", "batter"]
+    persistence.commit create_commit(id, 5, "five", "six")
+    persistence.commit create_commit(id, 1, "one", "two")
+    persistence.commit create_commit(id, 3, "three", "four")
+    persistence.commit create_commit("other", 1, "cake", "batter")
 
     result = persistence.load id
-    result.should == ["one", "two", "three", "four", "five", "six"]
+    result.map{|r| r['body']}.should == ["one", "two", "three", "four", "five", "six"]
   end
 
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
-    let(:events) { (1..20).map {|i| { :dispatched => i.even? } } }
+    let(:events) { create_commit(id, 1, *(1..20)).each_with_index {|e,i| e['dispatched'] = i.even? } }
     before do
-      persistence.commit id, 1, events
-      other_events = (1..60).map {|i| { :dispatched => i.odd? }}
-      persistence.commit uuid.generate(:compact), 1, other_events
+      persistence.commit events
+      other_events = create_commit("other", 1, *(1..60)).each_with_index {|e,i| e['dispatched'] = i.even? }
+      persistence.commit other_events
     end
 
     it "should load events" do
@@ -64,11 +65,11 @@ describe Eventus::Persistence::KyotoCabinet do
     end
 
     it "should throw concurrency exception if the same event number is added" do
-      lambda {persistence.commit id, 3, ["This is taken"]}.should raise_error(Eventus::ConcurrencyError)
+      lambda {persistence.commit create_commit(id, 3, "This is taken")}.should raise_error(Eventus::ConcurrencyError)
     end
 
     it "should rollback changes on concurrency error" do
-      persistence.commit id, 3, ["first", "second", "third"] rescue nil
+      persistence.commit create_commit(id, 3, "first", "second", "third") rescue nil
 
       result = persistence.load id
       result.length.should == 20
@@ -89,15 +90,28 @@ describe Eventus::Persistence::KyotoCabinet do
     it "should use serializer" do
       input = "original"
       ser = "i'm serialized!"
+      id = uuid.generate :compact
+      commit = create_commit(id, 1, input)
 
-      serializer.should_receive(:serialize).with(input).and_return(ser)
+      serializer.should_receive(:serialize).with(commit[0]).and_return(ser)
       serializer.should_receive(:deserialize).with(ser).and_return(input)
 
-      id = uuid.generate :compact
 
-      persistence.commit id, 1, [input]
+      persistence.commit commit
       result = persistence.load id
       result[0].should == input
     end
+  end
+end
+
+def create_commit(id, start, *bodies)
+  bodies.each.with_index(start).map do |b, i|
+    {
+      'name' => 'cereal',
+      'body' => b,
+      'time' => Time.now.utc.iso8601,
+      'sid' => id,
+      'sequence' => i
+    }
   end
 end
