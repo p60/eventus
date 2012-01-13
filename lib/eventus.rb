@@ -25,4 +25,4 @@ module Eventus
   end
 end
 
-%w{store stream errors}.each { |r| require "eventus/#{r}" }
+%w{stream errors}.each { |r| require "eventus/#{r}" }
