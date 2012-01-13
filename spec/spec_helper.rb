@@ -13,6 +13,9 @@ RSpec.configure do |config|
 end
 
 def create_commit(id, start, *bodies)
+  if bodies[0].is_a? Range
+    bodies = bodies[0]
+  end
   bodies.each.with_index(start).map do |b, i|
     {
       'name' => 'cereal',

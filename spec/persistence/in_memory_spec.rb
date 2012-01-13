@@ -50,6 +50,12 @@ describe Eventus::Persistence::InMemory do
       result.length.should == 40
     end
 
+    it "should mark an event as dispatched" do
+      result = persistence.load_undispatched[0]
+      persistence.mark_dispatched(result['sid'], result['sequence'])
+      persistence.load_undispatched.include?(result).should be_false
+    end
+
     it "should throw concurrency exception if the same event number is added" do
       lambda {persistence.commit create_commit(id, 3, "This is taken")}.should raise_error(Eventus::ConcurrencyError)
     end

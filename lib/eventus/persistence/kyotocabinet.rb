@@ -6,8 +6,11 @@ module Eventus
 
       def initialize(options = {})
         @db = ::KyotoCabinet::DB::new
-        @db.open(options[:path], ::KyotoCabinet::DB::OCREATE)
-        @serializer = options.fetch(:serializer) { Eventus::Serializers::Marshal }
+        @queue = ::KyotoCabinet::DB::new
+        @serializer = options.delete(:serializer) || Eventus::Serializers::Marshal
+        queue_con = build_connection(:path => options.delete(:queue_path) || '*')
+        con = build_connection(options)
+        raise Eventus::ConnectionError unless @db.open(con) && @queue.open(queue_con)
       end
 
       def commit(events)
@@ -17,6 +20,7 @@ module Eventus
             key = build_key(pid, event['sequence'])
             value = @serializer.serialize(event)
             raise Eventus::ConcurrencyError unless @db.add(key,value)
+            @queue.set(key, "")
           end
         end
       end
@@ -35,18 +39,18 @@ module Eventus
 
       def load_undispatched
         events = []
-        @db.cursor_process do |cur|
-          cur.jump
-          while (record = cur.get(true))
-            k,v = record
-            obj = @serializer.deserialize(v)
-            unless (obj['dispatched'] || obj[:dispatched])
-              events << obj
-            end
-          end
+        @queue.each_key do |key|
+          value = @db.get(key[0])
+          next unless value
+          obj = @serializer.deserialize(value)
+          events << obj
         end
-
         events
+      end
+
+      def mark_dispatched(stream_id, sequence)
+        key = build_key(pack_hex(stream_id), sequence)
+        @queue.remove(key)
       end
 
       def pack_hex(id)
@@ -55,6 +59,24 @@ module Eventus
 
       def build_key(id, index)
         id + ("_%07d" % index)
+      end
+
+      def close
+        @db.close
+        @queue.close
+      end
+
+      private
+
+      def build_connection(options)
+        opts = {
+          :path => '%', #in-memory tree
+          :opts => :linear
+        }.merge!(options)
+
+        path = opts.delete(:path)
+
+        opts.reduce(path) { |memo, kvp| memo << "##{kvp[0]}=#{kvp[1]}" }
       end
     end
   end

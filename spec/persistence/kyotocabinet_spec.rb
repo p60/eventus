@@ -1,9 +1,12 @@
 require 'spec_helper'
 
 describe Eventus::Persistence::KyotoCabinet do
-  let(:options) { {:path => '%'} }
-  let(:persistence) { Eventus::Persistence::KyotoCabinet.new(options) }
+  let(:persistence) { @persistence }
   let(:uuid) { UUID.new }
+
+  before(:all) do
+    @persistence = Eventus::Persistence::KyotoCabinet.new
+  end
 
   it "should pack keys" do
     1000.times do
@@ -39,7 +42,7 @@ describe Eventus::Persistence::KyotoCabinet do
     persistence.commit create_commit(id, 5, "five", "six")
     persistence.commit create_commit(id, 1, "one", "two")
     persistence.commit create_commit(id, 3, "three", "four")
-    persistence.commit create_commit("other", 1, "cake", "batter")
+    persistence.commit create_commit(uuid.generate, 1, "cake", "batter")
 
     result = persistence.load id
     result.map{|r| r['body']}.should == ["one", "two", "three", "four", "five", "six"]
@@ -47,21 +50,26 @@ describe Eventus::Persistence::KyotoCabinet do
 
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
-    let(:events) { create_commit(id, 1, *(1..20)).each_with_index {|e,i| e['dispatched'] = i.even? } }
+    let(:events) { create_commit(id, 1, *(1..200)) }
     before do
       persistence.commit events
-      other_events = create_commit("other", 1, *(1..60)).each_with_index {|e,i| e['dispatched'] = i.even? }
+      other_events = create_commit(uuid.generate(:compact), 1, (1..10))
       persistence.commit other_events
     end
 
     it "should load events" do
       result = persistence.load id
-      result.length.should == 20
+      result.length.should == events.length
     end
 
     it "should load undispatched events" do
       result = persistence.load_undispatched
-      result.length.should == 40 #10 from events, 30 from other_events
+    end
+
+    it "should mark an event as dispatched" do
+      result = persistence.load_undispatched[0]
+      persistence.mark_dispatched(result['sid'], result['sequence'])
+      persistence.load_undispatched.include?(result).should be_false
     end
 
     it "should throw concurrency exception if the same event number is added" do
@@ -75,24 +83,22 @@ describe Eventus::Persistence::KyotoCabinet do
       end
 
       result = persistence.load id
-      result.length.should == 20
+      result.should == events
     end
 
     it "should load all events from a minimum" do
       result = persistence.load id, 10
-      result.length.should == 11
+      result.should == events.select {|e| e['sequence'] >= 10}
     end
   end
 
   describe "when serialization is set" do
     let(:serializer) { stub }
-    before do
-      options[:serializer] = serializer
-    end
+    let(:persistence) { Eventus::Persistence::KyotoCabinet.new(:path => '%', :serializer => serializer) }
 
     it "should use serializer" do
-      input = "original"
-      ser = "i'm serialized!"
+      input = {:name => 'event'}
+      ser = "serialized!!"
       id = uuid.generate :compact
       commit = create_commit(id, 1, input)
 

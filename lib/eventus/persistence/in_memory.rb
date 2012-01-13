@@ -41,6 +41,16 @@ module Eventus
         end
       end
 
+      def mark_dispatched(stream_id, sequence)
+        key = build_key(stream_id, sequence)
+        value = @store[key]
+        return unless value
+        event = @serializer.deserialize(value)
+        event['dispatched'] = true
+        obj = @serializer.serialize(event)
+        @store[key] = obj
+      end
+
       def build_key(id, index)
         id + ("_%07d" % index)
       end
