@@ -1,3 +1,5 @@
+require 'logger'
+
 module Eventus
   autoload :Serializers, 'eventus/serializers'
   autoload :AggregateRoot, 'eventus/aggregate_root'
@@ -21,6 +23,17 @@ module Eventus
 
     def dispatcher=(val)
       @dispatcher = val
+    end
+
+    def logger
+      return @logger if @logger
+      @logger ||= Logger.new(STDOUT)
+      @logger.level = Logger::WARN
+      @logger
+    end
+
+    def logger=(val)
+      @logger = val
     end
   end
 end

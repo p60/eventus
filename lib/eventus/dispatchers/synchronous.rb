@@ -9,6 +9,7 @@ module Eventus
       end
 
       def dispatch(events)
+        Eventus.logger.info "Dispatching #{events.length} events"
         events.each do |e|
           @action.call(e)
           @persistence.mark_dispatched e

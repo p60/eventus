@@ -10,6 +10,7 @@ module Eventus
         @serializer = options.delete(:serializer) || Eventus::Serializers::Marshal
         queue_con = build_connection(:path => options.delete(:queue_path) || '*')
         con = build_connection(options)
+        Eventus.logger.info "Opening db: #{con}, queue: #{queue_con}"
         raise Eventus::ConnectionError unless @db.open(con) && @queue.open(queue_con)
       end
 
@@ -26,6 +27,7 @@ module Eventus
       end
 
       def load(id, min = nil)
+        Eventus.logger.debug "Loading stream: #{id}"
         pid = pack_hex(id)
         keys = @db.match_prefix(pid)
 
@@ -45,10 +47,12 @@ module Eventus
           obj = @serializer.deserialize(value)
           events << obj
         end
+        Eventus.logger.info "#{events.length} undispatched events loaded"
         events
       end
 
       def mark_dispatched(stream_id, sequence)
+        Eventus.logger.debug "Marking #{stream_id}_#{sequence} dispatched"
         key = build_key(pack_hex(stream_id), sequence)
         @queue.remove(key)
       end
