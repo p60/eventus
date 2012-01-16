@@ -30,7 +30,7 @@ describe Eventus::AggregateRoot do
   describe "when events exist" do
     before do
       persistence.should_receive(:load).with('abc').and_return(events)
-      events << {:name => 'dino', :body => {}}
+      events << {'name' => 'dino', 'body' => {}}
     end
 
     it "should apply the event" do

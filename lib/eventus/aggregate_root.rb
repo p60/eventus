@@ -22,7 +22,7 @@ module Eventus
       def populate(stream)
         @stream = stream
         stream.committed_events.each do |event|
-          apply_change event[:name], event[:body], false
+          apply_change event['name'], event['body'], false
         end
       end
 
