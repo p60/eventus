@@ -5,7 +5,7 @@ class TestAgg
 
   attr_accessor :loaded
 
-  conflicts :cake_baked => :cake_baked
+  conflicts :lemon_squeezed => :cake_baked
 
   def bake_cake
     apply_change :cake_baked, :flavor => 'strawberry'
@@ -57,8 +57,8 @@ describe Eventus::AggregateRoot do
 
   describe "when saving" do
     let(:aggregate) { TestAgg.new }
-    let(:stream) { stub(:stream, :committed_events => events, :version => events.length) }
-    let(:events) { [{'name' => 'cake_baked'}] }
+    let(:stream) { stub(:stream, :committed_events => events, :version => 0) }
+    let(:events) { [{'name' => 'lemon_squeezed'}] }
 
     before do
       aggregate.populate(stream)

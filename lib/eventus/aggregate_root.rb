@@ -20,7 +20,7 @@ module Eventus
       def conflicts(added = {})
         @event_conflicts ||= {}
         added.each do |k,v|
-          @event_conflicts[k.to_s] = v.respond_to?(:map) ? v.map{|e| e.to_s} : v.to_s
+          @event_conflicts[k.to_s] = v.respond_to?(:map) ? v.map{|e| e.to_s} : [v.to_s]
         end
       end
 
@@ -43,7 +43,7 @@ module Eventus
         @stream.commit
         true
       rescue Eventus::ConcurrencyError
-        committed = @stream.committed_events[version-1..-1]
+        committed = @stream.committed_events.drop(version)
         uncommitted = @stream.uncommitted_events
         conflict = committed.any?{ |e| uncommitted.any? {|u| self.class.conflict?(e['name'], u['name'])} }
         raise Eventus::ConflictError if conflict
