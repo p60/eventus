@@ -32,7 +32,7 @@ module Eventus
       @uncommitted_events.clear
     rescue ConcurrencyError => e
       Eventus.logger.info "ConcurrencyError, loading new events for: #{id}"
-      load_events @persistence.load(id, version + 1)
+      load_events @persistence.load(id, version)
       raise e
     end
 

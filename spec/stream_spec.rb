@@ -82,7 +82,7 @@ describe Eventus::Stream do
     end
 
     it "should load latest events" do
-      persistence.should_receive(:load).with(id, 1).and_return([stub, stub, stub])
+      persistence.should_receive(:load).with(id, 0).and_return([stub, stub, stub])
       stream.commit rescue nil
       stream.version.should == 3
     end
