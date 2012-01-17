@@ -5,6 +5,8 @@ class TestAgg
 
   attr_accessor :loaded
 
+  conflicts :cake_baked => :cake_baked
+
   def bake_cake
     apply_change :cake_baked, :flavor => 'strawberry'
   end
@@ -55,15 +57,29 @@ describe Eventus::AggregateRoot do
 
   describe "when saving" do
     let(:aggregate) { TestAgg.new }
-    let(:stream) { stub(:stream, :committed_events => []) }
+    let(:stream) { stub(:stream, :committed_events => events, :version => events.length) }
+    let(:events) { [{'name' => 'cake_baked'}] }
 
     before do
       aggregate.populate(stream)
     end
 
-    it "should commit stream" do
+    it "should return true when no concurrency error" do
       stream.should_receive(:commit)
-      aggregate.save
+      aggregate.save.should == true
+    end
+
+    it "should return false if no conflict" do
+      stream.should_receive(:commit).and_raise(Eventus::ConcurrencyError)
+      stream.should_receive(:uncommitted_events).and_return([{'name' => 'coconut'}])
+
+      aggregate.save.should == false
+    end
+
+    it "should raise conflict error if conflict exists" do
+      stream.should_receive(:commit).and_raise(Eventus::ConcurrencyError)
+      stream.should_receive(:uncommitted_events).and_return([{'name' => 'cake_baked'}])
+      lambda {aggregate.save}.should raise_error(Eventus::ConflictError)
     end
   end
 end

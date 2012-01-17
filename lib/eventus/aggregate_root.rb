@@ -16,6 +16,18 @@ module Eventus
       def persistence
         @persistence ||= Eventus.persistence
       end
+
+      def conflicts(added = {})
+        @event_conflicts ||= {}
+        added.each do |k,v|
+          @event_conflicts[k.to_s] = v.respond_to?(:map) ? v.map{|e| e.to_s} : v.to_s
+        end
+      end
+
+      def conflict?(e1, e2)
+        return false unless @event_conflicts
+        @event_conflicts.fetch(e1,[]).include?(e2) || @event_conflicts.fetch(e2,[]).include?(e1)
+      end
     end
 
     module InstanceMethods
@@ -27,7 +39,15 @@ module Eventus
       end
 
       def save
+        version = @stream.version
         @stream.commit
+        true
+      rescue Eventus::ConcurrencyError
+        committed = @stream.committed_events[version-1..-1]
+        uncommitted = @stream.uncommitted_events
+        conflict = committed.any?{ |e| uncommitted.any? {|u| self.class.conflict?(e['name'], u['name'])} }
+        raise Eventus::ConflictError if conflict
+        false
       end
 
       protected
