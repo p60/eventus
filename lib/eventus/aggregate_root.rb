@@ -26,7 +26,9 @@ module Eventus
 
       def conflict?(e1, e2)
         return false unless @event_conflicts
-        @event_conflicts.fetch(e1,[]).include?(e2) || @event_conflicts.fetch(e2,[]).include?(e1)
+        s1 = e1.to_s
+        s2 = e2.to_s
+        @event_conflicts.fetch(s1,[]).include?(s2) || @event_conflicts.fetch(s2,[]).include?(s1)
       end
     end
 
