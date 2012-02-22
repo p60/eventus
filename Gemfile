@@ -8,4 +8,5 @@ group :development do
   gem 'libnotify' if RUBY_PLATFORM =~ /linux/i
   gem 'uuid'
   gem 'kyotocabinet-ruby'
+  gem 'mongo'
 end
