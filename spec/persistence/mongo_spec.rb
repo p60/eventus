@@ -5,7 +5,7 @@ describe Eventus::Persistence::Mongo do
   let(:uuid) { UUID.new }
 
   before(:all) do
-    @persistence = Eventus::Persistence::Mongo.new('mongodb://localhost/test')
+    @persistence = Eventus::Persistence::Mongo.new(MONGO_URI)
     @persistence.db.collection('eventus_commits').drop
   end
 

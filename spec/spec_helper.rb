@@ -7,6 +7,7 @@ require 'eventus'
 Bundler.require :development
 
 Dir[File.join(File.dirname(__FILE__), 'support', '*.rb')].each { |d| require d }
+MONGO_URI = ENV['MONGO_URI'] || 'mongodb://localhost/test'
 
 RSpec.configure do |config|
   config.mock_with :rspec
