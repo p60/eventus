@@ -59,7 +59,7 @@ module Eventus
 
       def mark_commit_dispatched(commit_id)
         Eventus.logger.debug "Marking commit #{commit_id} dispatched"
-        @commits.update({_id: commit_id}, {dispatched: true})
+        @commits.update({_id: commit_id}, {'$set' => {'dispatched' => true}})
       end
 
       private
