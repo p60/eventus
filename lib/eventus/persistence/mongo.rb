@@ -29,6 +29,7 @@ module Eventus
         rescue ::Mongo::OperationFailure => e
           raise Eventus::ConcurrencyError if e.error_code == 11000
         end
+        doc
       end
 
       def load(id, min = nil)
@@ -48,16 +49,16 @@ module Eventus
           .sort_by{|e| e['sequence']}
       end
 
-      def load_undispatched
-        commits = @commits.find(dispatched: false).to_a
+      def load_undispatched_commits
+        commits = @commits.find(dispatched:false).to_a
         if commits.length > 0
           Eventus.logger.info "#{commits.length} undispatched commits loaded"
         end
         commits
       end
 
-      def mark_dispatched(commit_id)
-        Eventus.logger.debug "Marking #{commit_id} dispatched"
+      def mark_commit_dispatched(commit_id)
+        Eventus.logger.debug "Marking commit #{commit_id} dispatched"
         @commits.update({_id: commit_id}, {dispatched: true})
       end
 

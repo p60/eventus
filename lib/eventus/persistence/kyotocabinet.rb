@@ -24,6 +24,7 @@ module Eventus
             @queue.set(key, "")
           end
         end
+        events
       end
 
       def load(id, min = nil)

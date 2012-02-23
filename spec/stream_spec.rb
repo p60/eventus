@@ -44,8 +44,9 @@ describe Eventus::Stream do
 
     describe "when committed" do
       before do
-        persistence.should_receive(:commit)
-        dispatcher.should_receive(:dispatch)
+        payload = {:truck => 'money'}
+        persistence.should_receive(:commit).and_return(payload)
+        dispatcher.should_receive(:dispatch).with(payload)
         stream.commit
       end
 

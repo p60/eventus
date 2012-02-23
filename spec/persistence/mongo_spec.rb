@@ -50,13 +50,13 @@ describe Eventus::Persistence::Mongo do
     end
 
     it "should load undispatched events" do
-      result = persistence.load_undispatched
+      result = persistence.load_undispatched_commits
     end
 
     it "should mark an event as dispatched" do
-      result = persistence.load_undispatched[0]
-      persistence.mark_dispatched(result['_id'])
-      persistence.load_undispatched.any?{|c| c['_id'] == result['_id']}.should be_false
+      result = persistence.load_undispatched_commits[0]
+      persistence.mark_commit_dispatched(result['_id'])
+      persistence.load_undispatched_commits.include?(result).should be_false
     end
 
     it "should throw concurrency exception if the same event number is added" do

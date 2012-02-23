@@ -26,9 +26,9 @@ module Eventus
         e['sequence'] = i
       end
       Eventus::logger.debug "Committing #{@uncommitted_events.length} events to #{@id}"
-      @persistence.commit @uncommitted_events
+      payload = @persistence.commit @uncommitted_events
       load_events @uncommitted_events
-      @dispatcher.dispatch @uncommitted_events if @dispatcher
+      @dispatcher.dispatch(payload) if @dispatcher
       @uncommitted_events.clear
     rescue ConcurrencyError => e
       Eventus.logger.info "ConcurrencyError, loading new events for: #{id}"
