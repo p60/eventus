@@ -14,15 +14,15 @@ module Eventus
       def commit(events)
         seqs = events.map{|e| e['sequence']}
         doc = {
-          _id: "#{events[0]['sid']}_#{seqs.min}",
-          sid: events[0]['sid'],
-          min: seqs.min,
-          max: seqs.max,
-          events: events,
-          dispatched: false
+          '_id'        => "#{events[0]['sid']}_#{seqs.min}",
+          'sid'        => events[0]['sid'],
+          'min'        => seqs.min,
+          'max'        => seqs.max,
+          'events'     => events,
+          'dispatched' => false
         }
 
-        future = @commits.find_one({sid:doc[:sid], max:{:$gte => doc[:min]}})
+        future = @commits.find_one({sid:doc['sid'], max:{:$gte => doc['min']}})
         raise Eventus::ConcurrencyError if future
         begin
         @commits.insert(doc, safe:true)
