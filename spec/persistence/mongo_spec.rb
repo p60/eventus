@@ -76,25 +76,5 @@ describe Eventus::Persistence::Mongo do
       result.should == events.select {|e| e['sequence'] >= 3}
     end
   end
-
-  describe "when serialization is set" do
-    let(:serializer) { stub }
-    let(:persistence) { Eventus::Persistence::KyotoCabinet.new(:path => '%', :serializer => serializer) }
-
-    it "should use serializer" do
-      input = {:name => 'event'}
-      ser = "serialized!!"
-      id = uuid.generate :compact
-      commit = create_commit(id, 1, input)
-
-      serializer.should_receive(:serialize).with(commit[0]).and_return(ser)
-      serializer.should_receive(:deserialize).with(ser).and_return(input)
-
-
-      persistence.commit commit
-      result = persistence.load id
-      result[0].should == input
-    end
-  end
 end
 
