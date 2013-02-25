@@ -12,6 +12,7 @@ module Eventus
       end
 
       def commit(events)
+        return if events.empty?
         seqs = events.map{|e| e['sequence']}
         doc = {
           '_id'        => "#{events[0]['sid']}_#{seqs.min}",

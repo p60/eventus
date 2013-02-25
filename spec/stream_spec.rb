@@ -18,6 +18,12 @@ describe Eventus::Stream do
     stream.uncommitted_events.should be_empty
   end
 
+  it "should not commit to persistence if no uncommited events" do
+    persistence.should_not_receive(:commit)
+    stream.uncommitted_events.clear
+    stream.commit
+  end
+
   describe "when events available from persistence" do
     before do
       persistence.should_receive(:load).and_return([stub, stub])

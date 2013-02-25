@@ -26,6 +26,7 @@ module Eventus
         e['sequence'] = i
       end
       Eventus::logger.debug "Committing #{@uncommitted_events.length} events to #{@id}"
+      return if @uncommitted_events.empty?
       payload = @persistence.commit @uncommitted_events
       load_events @uncommitted_events
       @dispatcher.dispatch(payload) if @dispatcher

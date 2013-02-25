@@ -76,5 +76,9 @@ describe Eventus::Persistence::Mongo do
       result.should == events.select {|e| e['sequence'] >= 3}
     end
   end
+
+  it 'should return nil if there are no events' do
+    persistence.commit([]).should be_nil
+  end
 end
 
