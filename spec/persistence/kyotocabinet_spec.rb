@@ -8,11 +8,11 @@ describe Eventus::Persistence::KyotoCabinet do
     @persistence = Eventus::Persistence::KyotoCabinet.new
   end
 
-  it "should pack keys" do
+  it "should not pack keys" do
     1000.times do
       key = uuid.generate(:compact)
       packed = persistence.pack_hex(key)
-      packed.unpack('H*')[0].should == key
+      packed.should == key
     end
   end
 

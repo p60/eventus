@@ -59,7 +59,8 @@ module Eventus
       end
 
       def pack_hex(id)
-        id.match(/^[0-9a-fA-F]+$/) ? [id].pack('H*') : id
+        id
+        #id.match(/^[0-9a-fA-F]+$/) ? [id].pack('H*') : id
       end
 
       def build_key(id, index)
