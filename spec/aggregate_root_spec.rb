@@ -81,5 +81,11 @@ describe Eventus::AggregateRoot do
       stream.should_receive(:uncommitted_events).and_return([{'name' => 'cake_baked'}])
       lambda {aggregate.save}.should raise_error(Eventus::ConflictError)
     end
+
+    it "should invoke on_concurrency_error when concurrency error" do
+      stream.should_receive(:commit).and_raise(Eventus::ConcurrencyError)
+      aggregate.should_receive(:on_concurrency_error).with(0, an_instance_of(Eventus::ConcurrencyError))
+      aggregate.save
+    end
   end
 end

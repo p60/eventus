@@ -44,15 +44,19 @@ module Eventus
         version = @stream.version
         @stream.commit
         true
-      rescue Eventus::ConcurrencyError
+      rescue Eventus::ConcurrencyError => e
+        on_concurrency_error(version, e)
+      end
+
+      protected
+
+      def on_concurrency_error(version, e)
         committed = @stream.committed_events.drop(version)
         uncommitted = @stream.uncommitted_events
         conflict = committed.any?{ |e| uncommitted.any? {|u| self.class.conflict?(e['name'], u['name'])} }
         raise Eventus::ConflictError if conflict
         false
       end
-
-      protected
 
       def apply_change(name, body=nil, is_new=true)
         method_name = "apply_#{name}"
