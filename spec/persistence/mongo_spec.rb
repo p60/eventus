@@ -80,5 +80,12 @@ describe Eventus::Persistence::Mongo do
   it 'should return nil if there are no events' do
     persistence.commit([]).should be_nil
   end
+
+  it 'should reraise non-"already exists" errors' do
+    e = Mongo::OperationFailure.new('fail', 500)
+    commits = persistence.instance_eval { @commits }
+    commits.stub(:insert) { raise e }
+    lambda {persistence.commit create_commit('commitid', 1, "first", "second", "third")}.should raise_error(e)
+  end
 end
 

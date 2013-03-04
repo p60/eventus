@@ -26,9 +26,10 @@ module Eventus
         future = @commits.find_one({sid:doc['sid'], max:{:$gte => doc['min']}})
         raise Eventus::ConcurrencyError if future
         begin
-        @commits.insert(doc, w: 2)
+        @commits.insert(doc)
         rescue ::Mongo::OperationFailure => e
           raise Eventus::ConcurrencyError if e.error_code == 11000
+          raise
         end
         doc
       end
