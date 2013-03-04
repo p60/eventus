@@ -5,8 +5,11 @@ describe Eventus::Persistence::Mongo do
   let(:uuid) { UUID.new }
 
   before(:all) do
+    #Wipe collection
+    Eventus::Persistence::Mongo.new(MONGO_URI).commits.drop
+
     @persistence = Eventus::Persistence::Mongo.new(MONGO_URI)
-    @persistence.db.collection('eventus_commits').drop
+    @persistence.commits.remove
   end
 
   it "should store complex objects" do
@@ -33,6 +36,16 @@ describe Eventus::Persistence::Mongo do
 
     result = persistence.load id
     result.map{|r| r['body']}.should == ["one", "two", "three", "four", "five", "six"]
+  end
+
+  it "should create an index on sid" do
+    indexes = persistence.commits.index_information
+    indexes.any? { |_,v| v['key'] == {'sid' => 1} }.should == true
+  end
+
+  it "should create an index on sid, min" do
+    indexes = persistence.commits.index_information
+    indexes.any? { |_,v| v['key'] == {'sid' => 1, 'min' => 1} }.should == true
   end
 
   describe "when events exist" do

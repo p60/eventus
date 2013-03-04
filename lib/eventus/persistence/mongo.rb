@@ -3,12 +3,14 @@ require 'mongo'
 module Eventus
   module Persistence
     class Mongo
-      attr_reader :db
+      attr_reader :db, :commits
 
       def initialize(uri, options={})
         collection_name = options.delete(:collection) || 'eventus_commits'
         @db = build_db(uri, options)
         @commits = db.collection(collection_name)
+        @commits.ensure_index :sid => ::Mongo::ASCENDING
+        @commits.ensure_index :sid => ::Mongo::ASCENDING, :min => ::Mongo::ASCENDING
       end
 
       def commit(events)
