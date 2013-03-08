@@ -9,4 +9,5 @@ group :development do
   gem 'uuid'
   gem 'kyotocabinet-ruby'
   gem 'mongo'
+  gem 'redis'
 end
