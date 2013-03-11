@@ -1,14 +1,11 @@
 require 'spec_helper'
 
 describe Eventus::Persistence::Redis do
-  let(:persistence) { @persistence }
+  let(:persistence) { Eventus::Persistence::Redis.new(@redis) }
   let(:uuid) { UUID.new }
 
-  before(:all) do
-    redis = Redis.new
-    redis.flushall
-    @persistence = Eventus::Persistence::Redis.new(redis)
-  end
+  before(:all) { @redis = Redis.new }
+  before { @redis.flushall }
 
   it "should store complex objects" do
     id = uuid.generate :compact
@@ -27,9 +24,9 @@ describe Eventus::Persistence::Redis do
 
   it "should return events ordered" do
     id = uuid.generate :compact
-    persistence.commit create_commit(id, 5, "five", "six")
     persistence.commit create_commit(id, 1, "one", "two")
     persistence.commit create_commit(id, 3, "three", "four")
+    persistence.commit create_commit(id, 5, "five", "six")
     persistence.commit create_commit("other", 1, "cake", "batter")
 
     result = persistence.load id
@@ -41,7 +38,7 @@ describe Eventus::Persistence::Redis do
     let(:events) { create_commit(id, 1, *(1..20)).each_with_index {|e,i| e['dispatched'] = i.even? } }
     before do
       persistence.commit events
-      other_events = create_commit("other", 1, *(1..60)).each_with_index {|e,i| e['dispatched'] = i.even? }
+      other_events = create_commit("another", 1, *(1..60)).each_with_index {|e,i| e['dispatched'] = i.even? }
       persistence.commit other_events
     end
 
@@ -62,7 +59,7 @@ describe Eventus::Persistence::Redis do
     #end
 
     it "should throw concurrency exception if the same event number is added" do
-      lambda {persistence.commit create_commit(id, 3, "This is taken")}.should raise_error(Eventus::ConcurrencyError)
+      expect {persistence.commit create_commit(id, 3, "This is taken")}.to raise_error(Eventus::ConcurrencyError)
     end
 
     it "should rollback changes on concurrency error" do
