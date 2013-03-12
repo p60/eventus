@@ -1,6 +1,5 @@
 require 'spec_helper'
 
-__END__
 describe Eventus::Persistence::Mongo do
   let(:persistence) { @persistence }
   let(:uuid) { UUID.new }
