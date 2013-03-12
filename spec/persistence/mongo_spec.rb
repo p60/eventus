@@ -96,9 +96,9 @@ describe Eventus::Persistence::Mongo do
 
   it 'should reraise non-"already exists" errors' do
     e = Mongo::OperationFailure.new('fail', 500)
-    commits = persistence.instance_eval { @commits }
+    commits = persistence.commits
     commits.stub(:insert) { raise e }
-    lambda {persistence.commit create_commit('commitid', 1, "first", "second", "third")}.should raise_error(e)
+    expect {persistence.commit create_commit('commitid', 1, "first", "second", "third")}.to raise_error(Mongo::OperationFailure)
   end
 end
 

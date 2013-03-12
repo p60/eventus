@@ -111,5 +111,5 @@ describe Eventus::Persistence::KyotoCabinet do
       result[0].should == input
     end
   end
-end
+end unless ENV['TRAVIS'] || RUBY_ENGINE == 'jruby'
 

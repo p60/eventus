@@ -1,13 +1,13 @@
-source "http://rubygems.org"
+source "https://rubygems.org"
 
 gemspec
 
 group :development do
+  gem 'rake'
   gem 'rspec'
-  gem 'guard-rspec'
-  gem 'libnotify' if RUBY_PLATFORM =~ /linux/i
   gem 'uuid'
-  gem 'kyotocabinet-ruby'
   gem 'mongo'
   gem 'redis'
+
+  gem 'kyotocabinet-ruby', :platforms => [:mri, :rbx] unless ENV['TRAVIS']
 end
