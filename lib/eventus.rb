@@ -2,7 +2,6 @@ require 'logger'
 
 module Eventus
   autoload :Serializers, 'eventus/serializers'
-  autoload :AggregateRoot, 'eventus/aggregate_root'
   autoload :Dispatchers, 'eventus/dispatchers'
   autoload :Persistence, 'eventus/persistence'
   autoload :VERSION, 'eventus/version'
@@ -38,4 +37,4 @@ module Eventus
   end
 end
 
-%w{stream errors}.each { |r| require "eventus/#{r}" }
+%w{stream errors aggregate_root consumer}.each { |r| require "eventus/#{r}" }
