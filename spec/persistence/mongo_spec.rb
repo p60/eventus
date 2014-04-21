@@ -5,10 +5,8 @@ describe Eventus::Persistence::Mongo do
   let(:uuid) { UUID.new }
 
   before(:all) do
-    #Wipe collection
-    Eventus::Persistence::Mongo.new(MONGO_URI).commits.drop
-
-    @persistence = Eventus::Persistence::Mongo.new(MONGO_URI)
+    db = Mongo::MongoClient.from_uri(MONGO_URI).db
+    @persistence = Eventus::Persistence::Mongo.new(db['eventus_commits'])
     @persistence.commits.remove
   end
 
@@ -63,7 +61,7 @@ describe Eventus::Persistence::Mongo do
     end
 
     it "should load undispatched events" do
-      result = persistence.load_undispatched_commits
+      persistence.load_undispatched_commits
     end
 
     it "should mark an event as dispatched" do

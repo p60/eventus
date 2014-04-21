@@ -5,10 +5,9 @@ module Eventus
     class Mongo
       attr_reader :db, :commits
 
-      def initialize(uri, options={})
-        collection_name = options.delete(:collection) || 'eventus_commits'
-        @db = build_db(uri, options)
-        @commits = db.collection(collection_name)
+      def initialize(collection)
+        @db = collection.db
+        @commits = collection
         @commits.ensure_index :sid => ::Mongo::ASCENDING
         @commits.ensure_index :sid => ::Mongo::ASCENDING, :min => ::Mongo::ASCENDING
       end
@@ -28,7 +27,7 @@ module Eventus
         future = @commits.find_one({sid:doc['sid'], max:{:$gte => doc['min']}})
         raise Eventus::ConcurrencyError if future
         begin
-        @commits.insert(doc)
+          @commits.insert(doc)
         rescue ::Mongo::OperationFailure => e
           raise Eventus::ConcurrencyError if e.error_code == 11000
           raise
