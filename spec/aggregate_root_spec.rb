@@ -18,7 +18,7 @@ end
 
 describe Eventus::AggregateRoot do
   let(:events) { [] }
-  let(:persistence) { stub.as_null_object }
+  let(:persistence) { double.as_null_object }
 
   before do
     TestAgg.stub(:persistence).and_return(persistence)
@@ -43,7 +43,7 @@ describe Eventus::AggregateRoot do
 
   describe "when applying a new change" do
     let(:aggregate) { TestAgg.new }
-    let(:stream) { stub(:stream, :committed_events => []) }
+    let(:stream) { double(:stream, :committed_events => []) }
 
     before do
       aggregate.populate(stream)
@@ -57,7 +57,7 @@ describe Eventus::AggregateRoot do
 
   describe "when saving" do
     let(:aggregate) { TestAgg.new }
-    let(:stream) { stub(:stream, :committed_events => events, :version => 0) }
+    let(:stream) { double(:stream, :committed_events => events, :version => 0) }
     let(:events) { [{'name' => :lemon_squeezed}] }
 
     before do

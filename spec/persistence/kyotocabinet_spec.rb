@@ -93,7 +93,7 @@ describe Eventus::Persistence::KyotoCabinet do
   end
 
   describe "when serialization is set" do
-    let(:serializer) { stub }
+    let(:serializer) { double }
     let(:persistence) { Eventus::Persistence::KyotoCabinet.new(:path => '%', :serializer => serializer) }
 
     it "should use serializer" do

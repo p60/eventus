@@ -77,7 +77,7 @@ describe Eventus::Persistence::InMemory do
   end
 
   describe "when serialization is set" do
-    let(:serializer) { stub }
+    let(:serializer) { double }
     before do
       options[:serializer] = serializer
     end

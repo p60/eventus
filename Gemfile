@@ -7,6 +7,7 @@ group :development do
   gem 'rspec'
   gem 'uuid'
   gem 'mongo'
+  gem 'bson_ext'
   gem 'redis'
 
   gem 'kyotocabinet-ruby', :platforms => [:mri, :rbx] unless ENV['TRAVIS']

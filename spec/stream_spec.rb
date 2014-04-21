@@ -3,8 +3,8 @@ require 'spec_helper'
 describe Eventus::Stream do
   let(:id) { UUID.generate(:compact) }
   let(:stream) { Eventus::Stream.new(id, persistence, dispatcher) }
-  let(:persistence) { stub(:persistence).as_null_object }
-  let(:dispatcher) { stub(:dispatcher).as_null_object }
+  let(:persistence) { double(:persistence).as_null_object }
+  let(:dispatcher) { double(:dispatcher).as_null_object }
 
   it "should use id" do
     stream.id.should == id
@@ -26,7 +26,7 @@ describe Eventus::Stream do
 
   describe "when events available from persistence" do
     before do
-      persistence.should_receive(:load).and_return([stub, stub])
+      persistence.should_receive(:load).and_return([double, double])
     end
 
     it "should have an equal number of events" do
@@ -89,7 +89,7 @@ describe Eventus::Stream do
     end
 
     it "should load latest events" do
-      persistence.should_receive(:load).with(id, 0).and_return([stub, stub, stub])
+      persistence.should_receive(:load).with(id, 0).and_return([double, double, double])
       stream.commit rescue nil
       stream.version.should == 3
     end
