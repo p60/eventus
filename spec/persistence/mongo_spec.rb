@@ -46,6 +46,11 @@ describe Eventus::Persistence::Mongo do
     indexes.any? { |_,v| v['key'] == {'sid' => 1, 'min' => 1} }.should == true
   end
 
+  it "should create an index on sid, max" do
+    indexes = persistence.commits.index_information
+    indexes.any? { |_,v| v['key'] == {'sid' => 1, 'max' => -1} }.should == true
+  end
+
   describe "when events exist" do
     let(:id) { uuid.generate :compact }
     let(:events) { create_commit(id, 1, *(1..5)) }
@@ -85,6 +90,11 @@ describe Eventus::Persistence::Mongo do
     it "should load all events from a minimum" do
       result = persistence.load id, 3
       result.should == events.select {|e| e['sequence'] >= 3}
+    end
+
+    it "should load all events up to a maxium" do
+      result = persistence.load id, nil, 2
+      result.should == events.select {|e| e['sequence'] <= 2}
     end
   end
 

@@ -1,5 +1,3 @@
-require 'mongo'
-
 module Eventus
   module Persistence
     class Mongo
@@ -10,6 +8,7 @@ module Eventus
         @commits = collection
         @commits.ensure_index :sid => ::Mongo::ASCENDING
         @commits.ensure_index :sid => ::Mongo::ASCENDING, :min => ::Mongo::ASCENDING
+        @commits.ensure_index :sid => ::Mongo::ASCENDING, :max => ::Mongo::DESCENDING
       end
 
       def commit(events)
@@ -35,7 +34,7 @@ module Eventus
         doc
       end
 
-      def load(id, min = nil)
+      def load(id, min = nil, max = nil)
         Eventus.logger.debug "Loading stream: #{id}"
         query = {sid:id}
 
@@ -43,12 +42,18 @@ module Eventus
           query[:max] = {:$gte => min}
         end
 
+        if max
+          query[:min] = {:$lte => max}
+        end
+
         min ||= 0
+        max ||= Float::INFINITY
 
         @commits.find(query).to_a
           .map{|c| c['events']}
           .flatten
           .reject{|e| e['sequence'] < min}
+          .reject{|e| e['sequence'] > max}
           .sort_by{|e| e['sequence']}
       end
 
