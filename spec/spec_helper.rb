@@ -1,3 +1,4 @@
+require 'delegate'
 require 'rubygems'
 require 'bundler/setup'
 
@@ -8,8 +9,15 @@ Bundler.require :development
 
 Dir[File.join(File.dirname(__FILE__), 'support', '*.rb')].each { |d| require d }
 MONGO_URI = ENV['MONGO_URI'] || 'mongodb://localhost/test'
+SEQUEL_URI = ENV['SEQUEL_URI'] || 'sqlite:///'
+db = Sequel.connect SEQUEL_URI
+db.extension :sqlite_json
+Sequel.database_timezone = :utc
+Eventus::Persistence::Sequel.migrate!(db)
+
 
 RSpec.configure do |config|
+  config.backtrace_exclusion_patterns = []
   config.mock_with :rspec
 end
 
