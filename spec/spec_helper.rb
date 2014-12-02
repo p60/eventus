@@ -1,3 +1,4 @@
+ENV['TEST_MODE'] = 'true'
 require 'delegate'
 require 'rubygems'
 require 'bundler/setup'
