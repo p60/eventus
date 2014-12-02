@@ -24,7 +24,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'mongo'
   s.add_development_dependency 'bson_ext'
   s.add_development_dependency 'redis'
-  s.add_development_dependency 'kyotocabinet-ruby'
   s.add_development_dependency 'sequel'
   s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'sequel-enhancements'
