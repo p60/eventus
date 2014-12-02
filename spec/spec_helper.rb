@@ -2,8 +2,6 @@ ENV['TEST_MODE'] = 'true'
 require 'delegate'
 require 'rubygems'
 require 'bundler/setup'
-
-$:.unshift File.expand_path('../../lib', __FILE__)
 require 'eventus'
 
 Bundler.require :development
@@ -18,7 +16,6 @@ Eventus::Persistence::Sequel.migrate!(db)
 
 
 RSpec.configure do |config|
-  config.backtrace_exclusion_patterns = []
   config.mock_with :rspec
 end
 
