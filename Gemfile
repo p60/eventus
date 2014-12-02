@@ -2,4 +2,6 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'kyotocabinet-ruby', :platforms => [:ruby]
+unless ENV['TRAVIS']
+  gem 'kyotocabinet-ruby', :platforms => [:ruby]
+end
