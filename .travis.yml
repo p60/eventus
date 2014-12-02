@@ -9,3 +9,5 @@ rvm:
 services:
   - mongodb
   - redis-server
+notifications:
+  email: false
