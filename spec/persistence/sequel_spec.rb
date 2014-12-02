@@ -66,6 +66,11 @@ describe Eventus::Persistence::Sequel do
       result.select{|r| r['sid'] == id}.length.should == 10
     end
 
+    it "should load undispatched events by sid" do
+      result = persistence.load_undispatched(id)
+      result.length.should == 10
+    end
+
     it "should mark an event as dispatched" do
       result = persistence.load_undispatched[0]
       persistence.mark_dispatched(result['sid'], result['sequence'])

@@ -30,8 +30,10 @@ module Eventus
         events.all
       end
 
-      def load_undispatched
-        @dataset.where(:dispatched => false).all
+      def load_undispatched(sid = nil)
+        events = @dataset.where(:dispatched => false)
+        events = events.where(:sid => sid).order_by(:sequence) if sid
+        events.all
       end
 
       def mark_dispatched(sid, sequence)
