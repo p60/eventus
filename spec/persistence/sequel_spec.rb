@@ -22,6 +22,14 @@ describe Eventus::Persistence::Sequel do
     result['body'].should == event['body']
   end
 
+  it "should return events" do
+    id = uuid.generate :compact
+    o = {'a' => 'super', 'complex' => ['object', 'with', {'nested' => ['members', 'galore', 1]}]}
+    commit = create_commit(id, 1, o)
+    events = persistence.commit(commit)
+    events.should == commit
+  end
+
   it "should return no events when key not found" do
     result = persistence.load "my_id"
     result.should be_empty

@@ -19,6 +19,7 @@ module Eventus
           end
           @dataset.multi_insert(events)
         end
+        events
       rescue ::Sequel::UniqueConstraintViolation
         raise Eventus::ConcurrencyError
       end
