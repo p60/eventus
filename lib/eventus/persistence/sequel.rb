@@ -45,9 +45,9 @@ module Eventus
         end
       end
 
-      def self.migrate!(db)
+      def self.migrate!(db, target = nil)
         ::Sequel.extension :migration
-        ::Sequel::Migrator.run(db, MIGRATIONS_PATH, :table => :eventus_schema)
+        ::Sequel::Migrator.run(db, MIGRATIONS_PATH, :target => target, :table => :eventus_schema)
       end
     end
   end
