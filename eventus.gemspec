@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~>2.0'
   s.add_development_dependency 'uuid'
   s.add_development_dependency 'mongo'
-  s.add_development_dependency 'bson_ext'
   s.add_development_dependency 'redis'
   s.add_development_dependency 'sequel'
   s.add_development_dependency 'sqlite3'
