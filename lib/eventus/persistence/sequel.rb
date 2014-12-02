@@ -24,10 +24,11 @@ module Eventus
         raise Eventus::ConcurrencyError
       end
 
-      def load(sid, min=nil)
+      def load(sid, min = nil, max = nil)
         events = @dataset.where(:sid => sid)
         events = events.where{ sequence >= min } if min
-        events.all
+        events = events.where{ sequence <= max } if max
+        events.order_by(:sequence).all
       end
 
       def load_undispatched(sid = nil)

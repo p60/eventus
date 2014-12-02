@@ -95,5 +95,16 @@ describe Eventus::Persistence::Sequel do
       result = persistence.load id, 10
       result.length.should == 11
     end
+
+    it "should load all events up to a maximum" do
+      result = persistence.load id, nil, 15
+      result.length.should == 15
+    end
+
+    it "should load events between minimum and maximum" do
+      result = persistence.load id, 10, 15
+      p result
+      result.length.should == 6
+    end
   end
 end
