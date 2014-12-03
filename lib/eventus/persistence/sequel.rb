@@ -15,7 +15,7 @@ module Eventus
       def commit(events)
         @db.transaction(:savepoint => true) do
           events.each do |event|
-            event['body'] = db.typecast_value(:json, event['body'])
+            event['body'] = db.typecast_value(:json, event['body'] || {})
           end
           @dataset.multi_insert(events)
         end

@@ -22,6 +22,15 @@ describe Eventus::Persistence::Sequel do
     result['body'].should == event['body']
   end
 
+  it "stores nil body as empty object" do
+    id = uuid.generate :compact
+    commit = create_commit(id, 1, nil)
+    persistence.commit(commit)
+
+    result = persistence.load(id)[0]
+    result['body'].should == {}
+  end
+
   it "should return events" do
     id = uuid.generate :compact
     o = {'a' => 'super', 'complex' => ['object', 'with', {'nested' => ['members', 'galore', 1]}]}
