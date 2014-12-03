@@ -81,6 +81,11 @@ describe Eventus::Persistence::Sequel do
       expect {persistence.commit create_commit(id, 3, {"foo" => "This is taken"})}.to raise_error(Eventus::ConcurrencyError)
     end
 
+    it "should convert body into a normal hash" do
+      result = persistence.load_undispatched(id)
+      result[0]['body'].class.should == Hash
+    end
+
     it "should rollback changes on concurrency error" do
       begin
         persistence.commit create_commit(id, 3, {"foo" => "first"}, {"foo" => "second"}, {"foo" => "third"})
@@ -103,7 +108,6 @@ describe Eventus::Persistence::Sequel do
 
     it "should load events between minimum and maximum" do
       result = persistence.load id, 10, 15
-      p result
       result.length.should == 6
     end
   end

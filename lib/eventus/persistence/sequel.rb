@@ -25,16 +25,20 @@ module Eventus
       end
 
       def load(sid, min = nil, max = nil)
-        events = @dataset.where(:sid => sid)
-        events = events.where{ sequence >= min } if min
-        events = events.where{ sequence <= max } if max
-        events.order_by(:sequence).all
+        _load(sid, nil, min, max)
       end
 
       def load_undispatched(sid = nil)
-        events = @dataset.where(:dispatched => false)
-        events = events.where(:sid => sid).order_by(:sequence) if sid
-        events.all
+        _load(sid, false)
+      end
+
+      def _load(sid = nil, dispatched = nil, min = nil, max = nil)
+        events = @dataset
+        events = events.where(:sid => sid) unless sid.nil?
+        events = events.where(:dispatched => dispatched) unless dispatched.nil?
+        events = events.where{ sequence >= min } unless min.nil?
+        events = events.where{ sequence <= max } unless max.nil?
+        events.order_by(:sequence).all
       end
 
       def mark_dispatched(sid, sequence)
@@ -44,9 +48,11 @@ module Eventus
       end
 
       def convert_row(row)
-        row.each_with_object({}) do |(k,v), memo|
+        res = row.each_with_object({}) do |(k,v), memo|
           memo[k.to_s] = v
         end
+        res['body'] = res.fetch('body', {}).to_hash
+        res
       end
 
       def self.migrate!(db, target = nil)
